@@ -54,10 +54,13 @@ router.post("/", authenticate, async (req, res, next) => {
   }
 });
 
-router.delete("/:contactId", async (req, res, next) => {
+router.delete("/:contactId", authenticate, async (req, res, next) => {
   try {
-    const { contactId } = req.params;
-    const deleteContact = await Contact.findByIdAndRemove(contactId);
+    const { contactId, _id } = req.params;
+    const deleteContact = await Contact.findByIdAndRemove({
+      _id: contactId,
+      owner: _id,
+    });
 
     if (!deleteContact) {
       throw new NotFound();
@@ -68,17 +71,21 @@ router.delete("/:contactId", async (req, res, next) => {
   }
 });
 
-router.put("/:contactId", async (req, res, next) => {
+router.put("/:contactId", authenticate, async (req, res, next) => {
   try {
     const { error } = joiSchemaContact.validate(req.body);
     if (error) {
       throw new BadRequest(error.message);
     }
-    const { contactId } = req.params;
+    const { contactId, _id } = req.params;
 
-    const updateContact = await Contact.findByIdAndUpdate(contactId, req.body, {
-      new: true,
-    });
+    const updateContact = await Contact.findByIdAndUpdate(
+      { _id: contactId, owner: _id },
+      req.body,
+      {
+        new: true,
+      }
+    );
 
     if (!updateContact) {
       throw new NotFound();
@@ -92,9 +99,9 @@ router.put("/:contactId", async (req, res, next) => {
   }
 });
 
-router.patch("/:contactId/favorite", async (req, res, next) => {
+router.patch("/:contactId/favorite", authenticate, async (req, res, next) => {
   try {
-    const { contactId } = req.params;
+    const { contactId, _id } = req.params;
     const { favorite } = req.body;
 
     if (!favorite) {
@@ -102,7 +109,7 @@ router.patch("/:contactId/favorite", async (req, res, next) => {
     }
 
     const updateStatusContact = await Contact.findByIdAndUpdate(
-      contactId,
+      { _id: contactId, owner: _id },
       { favorite },
       {
         new: true,
