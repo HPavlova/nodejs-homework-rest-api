@@ -80,7 +80,7 @@ router.post("/login", async (req, res, next) => {
     if (!user) {
       throw new Unauthorized("Email or password is wrong");
     }
-
+    
     if (!user.verify) {
       throw new Unauthorized("Email not verify");
     }
